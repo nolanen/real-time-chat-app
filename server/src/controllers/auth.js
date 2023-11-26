@@ -16,7 +16,9 @@ class AuthController {
 
             const hashedPassword = await this.hashedPassword(password)
 
-            const user = await this.db.query("INSERT INTO users (user_name, user_email, user_password) VALUES($1, $2, $3) RETURNING *", [username, email, hashedPassword])
+            const defaultBio = "Lorem ipsum, dolor sit amet consectetur adipisicing elit. Ducimus, magnam earum enim quae non, iusto necessitatibus velit quibusdam est voluptate, laudantium modi libero animi eveniet atque assumenda vel eaque blanditiis?"
+
+            const user = await this.db.query("INSERT INTO users (user_name, user_email, user_password, user_bio) VALUES($1, $2, $3, $4) RETURNING *", [username, email, hashedPassword, defaultBio])
             console.log(user.rows)
             const jwtToken = await this.generateJWT(user.rows[0].user_id, user.rows[0].user_name)
             console.log(jwtToken)
