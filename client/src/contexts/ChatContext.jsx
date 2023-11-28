@@ -85,6 +85,7 @@ export const ChatProvider = ({children}) => {
 
     socket.on("chatCreationSuccess", (chat) => {
         setChats([chat, ...chats])
+        socket.emit("join chat", chat.chat_id)
         navigate(`/chats/${chat.chat_id}`)
     })
 

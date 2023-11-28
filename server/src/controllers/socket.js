@@ -16,6 +16,8 @@ class socketController {
     }
 
     joinChat(chat_id) {
+        const setArray = [...this.socket.rooms]
+        this.socket.leave(setArray[1])
         this.socket.join(chat_id)
     }
 
