@@ -11,24 +11,12 @@ class socketController {
         onlineUsers.set(this.user.id, socket)
     }
 
-    connect() {
-
-    }
-
     disconnect() {
         console.log("disconnected")
     }
 
     joinChat(chat_id) {
-        //console.log(chat_id)
         this.socket.join(chat_id)
-        //console.log(`User: ${this.user.id} joined chat: ${chat_id}`)
-        const rooms = this.io.sockets.adapter.rooms;
-        //this.io.to(chat_id).emit("message", "User: " + this.user.id + " has joind the chat")
-    }
-
-    leave() {
-
     }
 
     async newMessage(message) {
@@ -36,6 +24,16 @@ class socketController {
         const chat_id = setArray[1]
         const newMessageRequest = await this.db.query("INSERT INTO chat_messages(chat_id, user_id, text) VALUES($1, $2, $3) RETURNING *", [chat_id, this.user.id, message])
         const newMessage = newMessageRequest.rows[0]
+        const currentDate = new Date();
+        let hours = currentDate.getHours();
+        const minutes = currentDate.getMinutes();
+        const ampm = hours >= 12 ? 'pm' : 'am';
+      
+        hours = hours % 12 || 12;
+        const formattedMinutes = minutes < 10 ? `0${minutes}` : minutes;
+
+        newMessage.message_time = `${hours}:${formattedMinutes} ${ampm}`;
+
         this.io.to(chat_id).except(setArray[0]).emit("message", {
             user_id: this.user.id,
             text: newMessage.text,
@@ -54,8 +52,6 @@ class socketController {
         this.joinChat(chat_id)
         const newMessage = await this.newMessage(message)
         const contactSocket = onlineUsers.get(to_user)?.id
-        console.log("contact: " + contactSocket)
-        console.log(newMessage)
 
         const contact = await this.db.query("SELECT user_name FROM users WHERE user_id = $1", [to_user])
 

@@ -15,6 +15,8 @@ export const ChatProvider = ({children}) => {
     const {chat_id, user_id} = useParams()
     const [chatMessages, setChatMessages] = useState([])
 
+    const [openChatName, setOpenChatName] = useState("");
+
     const navigate = useNavigate()
 
     useEffect(() => {
@@ -25,12 +27,9 @@ export const ChatProvider = ({children}) => {
         if(chat_id) {
             getChatMessages()
         }
-        console.log(chat_id)
-        console.log(user_id)
     }, [chat_id])
 
     useEffect(() => {
-        console.log(chatMessages)
         handleChatUpdate(chatMessages[chatMessages.length-1])
     }, [chatMessages])
 
@@ -44,7 +43,6 @@ export const ChatProvider = ({children}) => {
             })
     
             const parseRes = await res.json()
-            console.log(parseRes)
             setChats(parseRes)
         } catch (error) {
             
@@ -52,7 +50,7 @@ export const ChatProvider = ({children}) => {
     }
 
     const onChatSelection = (i) => {
-        console.log(i)
+        setOpenChatName(chats[i].contact_name)
         socket.emit("join chat", chats[i].chat_id)
         navigate(`/chats/${chats[i].chat_id}`)
     }   
@@ -67,8 +65,6 @@ export const ChatProvider = ({children}) => {
             })
 
             const parseRes = await res.json()
-
-            console.log(parseRes)
 
             setChatMessages(parseRes)
 
@@ -88,29 +84,40 @@ export const ChatProvider = ({children}) => {
     }
 
     socket.on("chatCreationSuccess", (chat) => {
-        console.log(chat)
         setChats([chat, ...chats])
         navigate(`/chats/${chat.chat_id}`)
     })
 
     socket.on("new chat", (chat) => {
-        console.log(chat)
         setChats([chat, ...chats])
-        console.log(chats)
     })
+
+    const getCurrentTime = () => {
+        const currentDate = new Date();
+        let hours = currentDate.getHours();
+        const minutes = currentDate.getMinutes();
+        const ampm = hours >= 12 ? 'pm' : 'am';
+      
+        hours = hours % 12 || 12;
+        const formattedMinutes = minutes < 10 ? `0${minutes}` : minutes;
+
+        const formattedTime = `${hours}:${formattedMinutes} ${ampm}`;
+      
+        return formattedTime;
+      };
 
     const sendMessage = (message) => {
         try {
-            console.log(user_id)
             if(user_id) {
                 socket.emit("new chat", {to_user: user_id, message: message})
             } else {
                 socket.emit("message", message)
             }
+            
             setChatMessages([...chatMessages, {
                 user_id: null,
                 text: message,
-                message_time: "",
+                message_time: getCurrentTime(),
                 is_recipient: false
             }])
         } catch (error) {
@@ -124,7 +131,7 @@ export const ChatProvider = ({children}) => {
 
 
     return (
-        <ChatContext.Provider value={{chats, onChatSelection, chatMessages, sendMessage}}>
+        <ChatContext.Provider value={{chats, onChatSelection, chatMessages, sendMessage, openChatName}}>
             {children}
         </ChatContext.Provider>
     )

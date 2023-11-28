@@ -8,6 +8,7 @@ class UsersController {
     async getUser(req, res) {
         try {
             const { user_id } = req.params
+            console.log(req.params)
             const user = await this.db.query("SELECT user_name FROM users WHERE user_id = $1", [user_id])
             if(user.rows.length === 0) {
                 res.send("Error")

@@ -23,7 +23,7 @@ const Chats = () => {
                             <div className="flex-grow font-semibold">
                                 {chat.contact_name}
                             </div>
-                            <div className="text-sm">
+                            <div className="text-sm px-4">
                                 {chat.text}
                             </div>
                             <div className="text-xs text-gray-400">

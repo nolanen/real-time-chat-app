@@ -5,8 +5,10 @@ class ChatController {
 
     async getChats(req, res) {
         try {
-            console.log(req.user)
             const chats = await this.db.query("SELECT c.chat_id, text, message_time, (SELECT u.user_name FROM chat_users cu LEFT JOIN users u on u.user_id = cu.user_id WHERE cu.user_id != $1 and cu.chat_id = c.chat_id) as contact_name FROM chats c LEFT JOIN chat_users cu on c.chat_id = cu.chat_id LEFT JOIN users u on cu.user_id = u.user_id LEFT JOIN (SELECT chat_id, max(message_id) as message_id FROM chat_messages cm GROUP BY chat_id) as last_message ON c.chat_id = last_message.chat_id LEFT JOIN chat_messages cm on last_message.message_id = cm.message_id WHERE u.user_id = $1 ORDER BY message_time DESC", [req.user.id])
+            chats.rows.forEach(chat => {
+                chat.message_time = new Date(chat.message_time).toLocaleString('en-US');
+            });
             res.send(chats.rows)
         } catch (error) {
             
@@ -28,8 +30,9 @@ class ChatController {
         try {
             const chat_id  = req.params.id
             const messages = await this.db.query("SELECT cm.text, cm.message_time, u.user_id, CASE WHEN cm.user_id = $1 THEN FALSE ELSE TRUE END as is_recipient FROM chat_messages cm LEFT JOIN users u on cm.user_id = u.user_id WHERE chat_id = $2", [req.user.id, chat_id])
-            const today = new Date()
-            console.log(today)
+            messages.rows.forEach(message => {
+                message.message_time = new Date(message.message_time).toLocaleString('en-US');
+            });
             res.send(messages.rows)
         } catch (error) {
             
@@ -67,12 +70,6 @@ class ChatController {
             
         }
     }
-
-    // rest route to create chat in chats
-
-    // actual handler for new messages to save messages sent in socket
-
-
 }
 
 module.exports = ChatController

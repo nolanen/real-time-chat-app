@@ -31,7 +31,6 @@ io.use((socket, next) => socketAuthorization(socket, next))
 
 io.on("connection", (socket) => {
     const socketController = new SocketController(socket, io, db)
-    console.log(socket.connected)
 
     socket.on("join chat", (chat_id) => socketController.joinChat(chat_id))
 

@@ -33,7 +33,9 @@ const Chat = () => {
                     {chatMessages.length !== 0 && chatMessages.map((message, i) => (
                         <div key={i} className={`flex ${!message.is_recipient? 'justify-end': ''} items-en`}>
                             <div className="rounded-lg p-4 m-4 bg-slate-200">
-                                {message.text}
+                                <div>
+                                    {message.text}
+                                </div>
                                 {message.message_time}
                             </div>
                         </div>
